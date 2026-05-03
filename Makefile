@@ -1,6 +1,7 @@
 CC = gcc
-CFLAGS = -I../inc -pthread
-SRCS = $(wildcard ../src/*.c)
+MODULE_DIRS = $(wildcard */)
+CFLAGS = -I. $(addprefix -I, $(MODULE_DIRS)) -pthread
+SRCS = $(wildcard *.c) $(wildcard */*.c)
 OBJS = $(SRCS:.c=.o)
 TARGET = main
 
