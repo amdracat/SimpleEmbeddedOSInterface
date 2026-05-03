@@ -15,9 +15,11 @@ typedef struct job {
 
 static job_t *job_head = NULL;
 static job_t *job_tail = NULL;
-
 static pthread_mutex_t job_mutex = PTHREAD_MUTEX_INITIALIZER;
 static pthread_cond_t job_cond = PTHREAD_COND_INITIALIZER;
+
+static os_mode_t g_mode;
+static uint32_t g_time_ms = 0;
 
 /* =========================
  * イベント管理
@@ -77,9 +79,12 @@ static void* worker_thread(void *arg) {
  * API実装
  * ========================= */
 
-void os_init(void) {
+void os_init(os_mode_t mode) {
+    g_mode = mode;
     pthread_t tid;
-    pthread_create(&tid, NULL, worker_thread, NULL);
+    if (g_mode == OS_MODE_ASYNC) {
+        pthread_create(&tid, NULL, worker_thread, NULL);
+    }
 }
 
 /* 非同期実行 */
@@ -103,7 +108,7 @@ void os_post(os_job_fn_t fn, void *arg) {
 }
 
 /* キュー */
-
+#if 0
 os_queue_t* os_queue_create(int capacity) {
     os_queue_t *q = malloc(sizeof(os_queue_t));
     q->buffer = malloc(sizeof(void*) * capacity);
@@ -145,7 +150,7 @@ void* os_queue_recv(os_queue_t *q) {
     pthread_mutex_unlock(&q->mutex);
     return msg;
 }
-
+#endif
 /* イベント */
 
 void os_event_subscribe(os_event_id_t id, os_event_cb_t cb, void *arg) {
@@ -172,6 +177,19 @@ void os_event_publish(os_event_id_t id) {
     os_post(event_dispatch, (void*)(intptr_t)id);
 }
 
+/* =========================
+ * タイマー管理（MANUALモード用）
+ * ========================= */
+
+typedef struct timer {
+    uint32_t trigger_time;
+    os_job_fn_t fn;
+    void *arg;
+    struct timer *next;
+} timer_t;
+
+static timer_t *timer_head = NULL;
+
 /* タイマー */
 
 typedef struct {
@@ -189,13 +207,81 @@ static void* timer_thread(void *arg) {
 }
 
 void os_schedule(uint32_t delay_ms, os_job_fn_t fn, void *arg) {
-    pthread_t tid;
+    if (g_mode == OS_MODE_ASYNC) {
+        pthread_t tid;
+        timer_arg_t *t = malloc(sizeof(timer_arg_t));
+        t->delay = delay_ms;
+        t->fn = fn;
+        t->arg = arg;
+        pthread_create(&tid, NULL, timer_thread, t);
+        pthread_detach(tid);
+    } else { // OS_MODE_MANUAL
+        timer_t *timer = malloc(sizeof(timer_t));
+        timer->trigger_time = g_time_ms + delay_ms;
+        timer->fn = fn;
+        timer->arg = arg;
+        timer->next = timer_head;
+        timer_head = timer;
+    }
+}
 
-    timer_arg_t *t = malloc(sizeof(timer_arg_t));
-    t->delay = delay_ms;
-    t->fn = fn;
-    t->arg = arg;
+/* 手動スケジューリング（OS_MODE_MANUAL） */
 
-    pthread_create(&tid, NULL, timer_thread, t);
-    pthread_detach(tid);
+void os_run_one(void) {
+    if (g_mode != OS_MODE_MANUAL) return;
+
+    pthread_mutex_lock(&job_mutex);
+    if (job_head == NULL) {
+        pthread_mutex_unlock(&job_mutex);
+        return;
+    }
+
+    job_t *job = job_head;
+    job_head = job->next;
+    if (job_head == NULL) job_tail = NULL;
+    pthread_mutex_unlock(&job_mutex);
+
+    job->fn(job->arg);
+    free(job);
+}
+
+void os_run_all(void) {
+    if (g_mode != OS_MODE_MANUAL) return;
+
+    while (os_has_pending()) {
+        os_run_one();
+    }
+}
+
+bool os_has_pending(void) {
+    if (g_mode != OS_MODE_MANUAL) return false;
+
+    pthread_mutex_lock(&job_mutex);
+    bool has = (job_head != NULL);
+    pthread_mutex_unlock(&job_mutex);
+    return has;
+}
+
+uint32_t os_now_ms(void) {
+    return g_time_ms;
+}
+
+void os_advance_time(uint32_t ms) {
+    if (g_mode != OS_MODE_MANUAL) return;
+
+    uint32_t new_time = g_time_ms + ms;
+    g_time_ms = new_time;
+
+    // 期限切れのタイマーをジョブキューに投入
+    timer_t **pp = &timer_head;
+    while (*pp) {
+        timer_t *timer = *pp;
+        if (timer->trigger_time <= new_time) {
+            os_post(timer->fn, timer->arg);
+            *pp = timer->next;
+            free(timer);
+        } else {
+            pp = &timer->next;
+        }
+    }
 }

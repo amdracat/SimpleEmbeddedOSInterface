@@ -3,32 +3,31 @@
 #include <unistd.h> 
 #include "os.h"
 #include "TemperatureSensor.h"
+#include "MotorCtrl.h"
+#include "GPIO.h"
+#include "I2C.h"
+#include "Test_Motor.h"
 
-#define EVENT_TEST 1
 
-void on_event(void *arg) {
-    printf("event received: %d\n", (int)(intptr_t)arg);
-}
-
-void test_job(void *arg) {
-    printf("job executed: %s\n", (char*)arg);
-}
+#define OS_MANUAL
 
 int main() {
-    os_init();
-
+#if defined(OS_MANUAL)
+    os_init(OS_MODE_MANUAL);
+#else
+    os_init(OS_MODE_ASYNC);
+#endif
+    I2C_init();
+    GPIO_init();
     TemperatureSensor_init();
-    os_event_subscribe(EVENT_TEST, on_event, (void*)123);
+    MotorCtrl_init();
 
-    os_post(test_job, "hello");
-
-    os_event_publish(EVENT_TEST);
-
-    os_schedule(1000, test_job, "delayed");
-
+#if defined(OS_MANUAL)
+    test_motor_run();
+#else
     while (1) {
         sleep(1);
     }
-
+#endif
     return 0;
 }
