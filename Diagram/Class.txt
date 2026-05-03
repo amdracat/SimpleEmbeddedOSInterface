@@ -1,0 +1,12 @@
+classDiagram
+    class TemperatureSensor {
+        +read()
+        +onReadComplete()
+    }
+
+    class MotorCtrl {
+        +onTemperature()
+        +setSpeed()
+    }
+
+    TemperatureSensor --> MotorCtrl : EVENT_TEMP_READY

@@ -12,9 +12,18 @@
 #define MAX_INPUT_LEN 256
 #define MAX_ARGS 16
 
+typedef void (*cmd_handler_t)(int argc, char *argv[]);
+
+typedef struct {
+    const char *name;
+    cmd_handler_t handler;
+} cmd_t;
+
+
 static cmd_t g_commands[MAX_COMMANDS];
 static int g_command_count = 0;
 static pthread_t g_cmd_thread;
+
 
 
 
