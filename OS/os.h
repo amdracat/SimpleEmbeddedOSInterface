@@ -16,6 +16,7 @@ typedef void (*os_job_fn_t)(void *arg);
 
 /* 初期化 */
 void os_init(os_mode_t mode);
+os_mode_t os_get_mode(void);
 
 
 

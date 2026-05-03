@@ -87,6 +87,10 @@ void os_init(os_mode_t mode) {
     }
 }
 
+os_mode_t os_get_mode(void) {
+    return g_mode;
+}
+
 /* 非同期実行 */
 void os_post(os_job_fn_t fn, void *arg) {
     job_t *job = malloc(sizeof(job_t));

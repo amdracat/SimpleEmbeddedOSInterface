@@ -38,4 +38,5 @@ static void settemperature(uint8_t* temp)
     int16_t temperature = (int16_t)tmp;
     temperature = temperature >> 4; // 4ビット右シフトして温度値を取得
     current_temperature = temperature;
+    printf("Temperature updated: %d[degC]\n", current_temperature);
 }

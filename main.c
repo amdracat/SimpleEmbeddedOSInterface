@@ -1,5 +1,6 @@
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <unistd.h> 
 #include "os.h"
 #include "TemperatureSensor.h"
@@ -7,9 +8,10 @@
 #include "GPIO.h"
 #include "I2C.h"
 #include "Test_Motor.h"
+#include "Command.h"
 
+//#define OS_MANUAL
 
-#define OS_MANUAL
 
 int main() {
 #if defined(OS_MANUAL)
@@ -21,6 +23,9 @@ int main() {
     GPIO_init();
     TemperatureSensor_init();
     MotorCtrl_init();
+
+    // Initialize command interface (ASYNC mode only)
+    cmd_init();
 
 #if defined(OS_MANUAL)
     test_motor_run();
