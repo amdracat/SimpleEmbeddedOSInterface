@@ -2,25 +2,25 @@
 flowchart TD
 
     subgraph APP[アプリケーション層]
-        TS[TemperatureSensor<br>温度センサロジック]
-        MC[MotorCtrl<br>モータ制御ロジック]
+        TS[TemperatureSensor / 温度センサロジック]
+        MC[MotorCtrl / モータ制御ロジック]
     end
 
     TS -->|EVENT_TEMP_READY| MC
 
-    subgraph HAL[HAL 層<br>(I2C / GPIO 抽象化)]
-        I2C[I2C HAL<br>Dummy_I2C or 実機I2C]
-        GPIO[GPIO HAL<br>Dummy_GPIO or 実機GPIO]
+    subgraph HAL[HAL 層 (I2C / GPIO 抽象化)]
+        I2C[I2C HAL (Dummy_I2C or 実機I2C)]
+        GPIO[GPIO HAL (Dummy_GPIO or 実機GPIO)]
     end
 
     TS --> I2C
     MC --> GPIO
 
-    subgraph OS[OS 層<br>(最小OS抽象)]
+    subgraph OS[OS 層 (最小OS抽象)]
         POST[os_post()]
         SCHED[os_schedule()]
         EVENT[os_event_*()]
-        SIM[os_sim_*()<br>（テストモード）]
+        SIM[os_sim_*() / テストモード]
     end
 
     TS --> OS
