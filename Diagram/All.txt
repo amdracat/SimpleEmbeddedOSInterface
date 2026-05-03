@@ -1,3 +1,4 @@
+```mermaid
 flowchart TD
 
     subgraph APP[アプリケーション層]
@@ -27,3 +28,4 @@ flowchart TD
 
     I2C --> HW[Hardware]
     GPIO --> HW
+```
