@@ -1,6 +1,8 @@
-#include "os.h"
+
 #include <stdio.h>
 #include <unistd.h> 
+#include "os.h"
+#include "TemperatureSensor.h"
 
 #define EVENT_TEST 1
 
@@ -15,6 +17,7 @@ void test_job(void *arg) {
 int main() {
     os_init();
 
+    TemperatureSensor_init();
     os_event_subscribe(EVENT_TEST, on_event, (void*)123);
 
     os_post(test_job, "hello");
