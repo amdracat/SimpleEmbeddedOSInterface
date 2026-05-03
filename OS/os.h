@@ -45,10 +45,10 @@ void os_schedule(uint32_t delay_ms, os_job_fn_t fn, void *arg);
 
 
 /* 手動スケジューリング（OS_MODE_MANUAL） */
-void os_run_one(void);
-void os_run_all(void);
-bool os_has_pending(void);
-uint32_t os_now_ms(void);
-void os_advance_time(uint32_t ms);
+void os_sim_run_one(void);
+void os_sim_run_all(void);
+bool os_sim_has_pending(void);
+uint32_t os_sim_now_ms(void);
+void os_sim_advance_time(uint32_t ms);
 
 #endif

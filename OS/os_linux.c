@@ -231,7 +231,7 @@ void os_schedule(uint32_t delay_ms, os_job_fn_t fn, void *arg) {
 
 /* 手動スケジューリング（OS_MODE_MANUAL） */
 
-void os_run_one(void) {
+void os_sim_run_one(void) {
     if (g_mode != OS_MODE_MANUAL) return;
 
     pthread_mutex_lock(&job_mutex);
@@ -249,15 +249,15 @@ void os_run_one(void) {
     free(job);
 }
 
-void os_run_all(void) {
+void os_sim_run_all(void) {
     if (g_mode != OS_MODE_MANUAL) return;
 
-    while (os_has_pending()) {
-        os_run_one();
+    while (os_sim_has_pending()) {
+        os_sim_run_one();
     }
 }
 
-bool os_has_pending(void) {
+bool os_sim_has_pending(void) {
     if (g_mode != OS_MODE_MANUAL) return false;
 
     pthread_mutex_lock(&job_mutex);
@@ -266,11 +266,11 @@ bool os_has_pending(void) {
     return has;
 }
 
-uint32_t os_now_ms(void) {
+uint32_t os_sim_now_ms(void) {
     return g_time_ms;
 }
 
-void os_advance_time(uint32_t ms) {
+void os_sim_advance_time(uint32_t ms) {
     if (g_mode != OS_MODE_MANUAL) return;
 
     uint32_t new_time = g_time_ms + ms;

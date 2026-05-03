@@ -20,17 +20,17 @@ void test_motor_run()
         motor_speed_t speed;
         
         MotorCtrl_set_speed(MOTOR_SPEED_HIGH);
-        os_run_all();
+        os_sim_run_all();
         MotorCtrl_get_speed(&speed);
         test_assert(speed == MOTOR_SPEED_HIGH, "Motor speed set to HIGH");
         
         MotorCtrl_set_speed(MOTOR_SPEED_LOW);
-        os_run_all();
+        os_sim_run_all();
         MotorCtrl_get_speed(&speed);
         test_assert(speed == MOTOR_SPEED_LOW, "Motor speed set to LOW");
         
         MotorCtrl_set_speed(MOTOR_SPEED_STOP);
-        os_run_all();
+        os_sim_run_all();
         MotorCtrl_get_speed(&speed);
         test_assert(speed == MOTOR_SPEED_STOP, "Motor speed set to STOP");
     }
@@ -40,19 +40,19 @@ void test_motor_run()
         printf("--- Test 2: Temperature < -30[degC](Motor OFF) ---\n");
         
         MotorCtrl_set_speed(MOTOR_SPEED_HIGH);
-        os_run_all();
+        os_sim_run_all();
 
         // I2C経由で-40度を設定: -40 * 16 = -640 = 0xFD80
         uint8_t temp_data[2] = {0x80, 0xFD};
         I2C_write(0x48, temp_data, 2);
         
         // 初回のmotorctrl(@200ms)と temperature update(@1000ms)を実行
-        os_advance_time(1000);
-        os_run_all();
+        os_sim_advance_time(1000);
+        os_sim_run_all();
         
         // motorctrlが温度更新を反映させるため、次のmotorctrl実行まで進める
-        os_advance_time(200);  // motorctrl@1200ms 実行
-        os_run_all();
+        os_sim_advance_time(200);  // motorctrl@1200ms 実行
+        os_sim_run_all();
         
         uint8_t enable = GPIO_read(0);
         uint8_t speed_pin = GPIO_read(1);
@@ -66,16 +66,16 @@ void test_motor_run()
         printf("--- Test 3: Temperature -30[degC]to 30[degC](Motor HIGH SPEED) ---\n");
         
         MotorCtrl_set_speed(MOTOR_SPEED_HIGH);
-        os_run_all();
+        os_sim_run_all();
 
         // 10度を設定: 10 * 16 = 160 = 0x00A0
         uint8_t temp_data[2] = {0xA0, 0x00};
         I2C_write(0x48, temp_data, 2);
         
-        os_advance_time(1000);
-        os_run_all();
-        os_advance_time(200);
-        os_run_all();
+        os_sim_advance_time(1000);
+        os_sim_run_all();
+        os_sim_advance_time(200);
+        os_sim_run_all();
         
         uint8_t enable = GPIO_read(0);
         uint8_t speed_pin = GPIO_read(1);
@@ -84,10 +84,10 @@ void test_motor_run()
         test_assert(speed_pin == 1, "Motor high-speed enabled at 10°C");
 
         MotorCtrl_set_speed(MOTOR_SPEED_LOW);
-        os_run_all();
+        os_sim_run_all();
 
-        os_advance_time(200);
-        os_run_all();
+        os_sim_advance_time(200);
+        os_sim_run_all();
 
         enable = GPIO_read(0);
         speed_pin = GPIO_read(1);
@@ -97,10 +97,10 @@ void test_motor_run()
 
 
         MotorCtrl_set_speed(MOTOR_SPEED_STOP);
-        os_run_all();
+        os_sim_run_all();
 
-        os_advance_time(200);
-        os_run_all();
+        os_sim_advance_time(200);
+        os_sim_run_all();
 
         enable = GPIO_read(0);
         speed_pin = GPIO_read(1);
@@ -115,16 +115,16 @@ void test_motor_run()
         printf("--- Test 4: Temperature 30[degC]to 50[degC](Motor LOW SPEED) ---\n");
         
         MotorCtrl_set_speed(MOTOR_SPEED_HIGH);
-        os_run_all();
+        os_sim_run_all();
 
         // 40度を設定: 40 * 16 = 640 = 0x0280
         uint8_t temp_data[2] = {0x80, 0x02};
         I2C_write(0x48, temp_data, 2);
         
-        os_advance_time(1000);
-        os_run_all();
-        os_advance_time(200);
-        os_run_all();
+        os_sim_advance_time(1000);
+        os_sim_run_all();
+        os_sim_advance_time(200);
+        os_sim_run_all();
         
         uint8_t enable = GPIO_read(0);
         uint8_t speed_pin = GPIO_read(1);
@@ -139,16 +139,16 @@ void test_motor_run()
         printf("--- Test 5: Temperature >= 50[degC](Motor OFF) ---\n");
         
         MotorCtrl_set_speed(MOTOR_SPEED_HIGH);
-        os_run_all();
+        os_sim_run_all();
 
         // 60度を設定: 60 * 16 = 960 = 0x03C0
         uint8_t temp_data[2] = {0xC0, 0x03};
         I2C_write(0x48, temp_data, 2);
         
-        os_advance_time(1000);
-        os_run_all();
-        os_advance_time(200);
-        os_run_all();
+        os_sim_advance_time(1000);
+        os_sim_run_all();
+        os_sim_advance_time(200);
+        os_sim_run_all();
         
         uint8_t enable = GPIO_read(0);
         uint8_t speed_pin = GPIO_read(1);
