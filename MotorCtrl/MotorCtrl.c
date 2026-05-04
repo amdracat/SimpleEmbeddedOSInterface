@@ -39,10 +39,10 @@ static void setspeed(void *arg)
 }
 static int calculate_motor_speed(int temperature)
 {
-    /* -30度以下は停止、-30からから30度未満は高速、30度から50度未満は低速、それ以上は停止 */
-    if (temperature < -30) {
+    /* -10度以下は停止、-10からから30度未満は高速、30度から50度未満は低速、それ以上は停止 */
+    if (temperature < -10) {
         return MOTOR_SPEED_STOP; // 停止
-    } else if (temperature < 30) {
+    } else if (temperature < 40) {
         /* 常温では指定可能 */
         if (motor_speed == MOTOR_SPEED_HIGH) {
             return MOTOR_SPEED_HIGH; // 既に高速なら維持
@@ -51,7 +51,7 @@ static int calculate_motor_speed(int temperature)
         } else {
             return MOTOR_SPEED_STOP; // それ以外は停止
         }
-    } else if (temperature < 50) {
+    } else if (temperature < 60) {
         /* 低温では低速以下 */
         if (motor_speed == MOTOR_SPEED_HIGH) {
             return MOTOR_SPEED_LOW; // 高速から低速に変更
