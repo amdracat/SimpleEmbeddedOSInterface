@@ -10,7 +10,7 @@
 #include "Test_Motor.h"
 #include "Command.h"
 
-//#define OS_MANUAL
+#define OS_MANUAL
 
 
 int main() {
